@@ -24,9 +24,9 @@ connect the real REPL with OS shell(but yes, it's just a mimic shell, so it's
 not as powerful as the real shell), so that we can perform some system task
 occasionally.
 
-----------------------华丽分割线: version 1.0e-10 ----------------------
+----------------------鍗庝附鍒嗗壊绾匡細version 1.0e-10 ----------------------
 This tool is still under developing and just @ its initial stage. It might be
 not as strong/robust/useful as you imagine yet. If you get any ideas about 
 this tool(bug, functionality etc.), please don't hesitate to let me know
 (email: xiejianming@gmail.com).
-----------------------华丽分割线: version 1.0e-10 ----------------------
+----------------------鍗庝附鍒嗗壊绾匡細version 1.0e-10 ----------------------
