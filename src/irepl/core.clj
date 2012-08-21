@@ -1,8 +1,14 @@
-(ns shell.irepl
-  (:use [utils.debugger :only [gdb]])
-  (:use [shell.utils])
+;   Copyright (c) xjm (xiejianming@gmail.com). All rights reserved.
+;   The use and distribution terms for this software are covered by the
+;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+;   By using this software in any fashion, you are agreeing to be bound by
+;   the terms of this license.
+;   You must not remove this notice, or any other, from this software.
+
+(ns irepl.core
+  (:use [irepl.utils])
   (:use [clojure.string :only [triml]])
-  (:use [shell.init]))
+  (:use [irepl.init]))
 
 (defn ask
   "Ask for an input."
@@ -48,8 +54,8 @@
         (exec-external (subs (triml cmd) 1))
         (exec-clj cmd)))))
 
-(defn shell
-  "Starts the shell."
+(defn irepl
+  "Starts iRepl."
   [& p]
   (let [prompt (if (empty? p)
                  "iREPL"
@@ -62,7 +68,7 @@
         (if (exit-cmd cmd)
           (do 
             (clean-up)
-            (println "Quiting iREPL...."))
+            (println "Quiting iRepl...."))
           (do 
             (try 
               (exec cmd)
@@ -70,4 +76,4 @@
                 (println (.getMessage e))))
             (recur (ask (get-current-path)))))))))
 
-#_(do (use 'shell.irepl) (in-ns 'shell.irepl) (shell))
+#_(do (use 'irepl.core) (in-ns 'irepl.core) (irepl))
