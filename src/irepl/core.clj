@@ -49,9 +49,9 @@
 (defn- exec [^String cmd]  
   (let [[name & _] (break-str cmd)]
     (if (internal? name)
-      (exec-internal name (.trim (subs cmd (count name))))
+      (exec-internal name (triml (subs cmd (count name))))
       (if (= \! (first name))
-        (exec-external (subs (triml cmd) 1))
+        (do-external (subs (triml cmd) 1))
         (exec-clj cmd)))))
 
 (defn irepl

@@ -31,19 +31,31 @@
 ;;>>>>>>>>>> Working Directory >>>>>>>>>>
 
 (defmacro +internal
-  "Register a function/macro as iREPL internal cmd."
-  [^String name, f]
-  `(add *builtins* (name '~name) #'~f))
+  "Register a function/macro as iRepl internal cmd."
+  [name, f]
+  `(plus *builtins* (name '~name) #'~f))
+(defmacro -internal
+  "Remove registered internal cmd."
+  [name]
+  `(minus *builtins* (name '~name)))
 
 (defmacro +attr
   "Add an env attribute."
   [k, v]
-  `(add *irepl_attr* ~k ~v))
+  `(plus *irepl_attr* ~k ~v))
+(defmacro -attr
+  "Remove an env attribute."
+  [k]
+  `(minus *irepl_attr* ~k))
 
 (defn +env
-  "Add env setting."
-  [vname value]
-  (add *shell_env* vname value))
+  "Add an env variable."
+  [^String vname ^String value]
+  (plus *shell_env* vname value))
+(defn -env
+  "Remove an env variable."
+  [^String vname]
+  (minus *shell_env* vname))
 
 (defn init-common
   "Init env and load cmd for common use."
@@ -75,7 +87,7 @@
   "Initialize."
   [& opts]
   (init-common)
-  (case (@*irepl_attr* :os)
+  (case (:os @*irepl_attr*)
     "windows" (init-windows)
     "linux" (init-linux)
     (println "what the hell do u want?")))
@@ -89,14 +101,22 @@
   (reset! *wd* nil))
 
 (defn exec-external
-  "Execute cmd as external(system call) program and print the outcomes."
+  "Execute cmd as external(system call) program."
   [^String cmd]
-  (let [[name & opts] (break-str cmd)]
-    ;(gdb "====EXTERNAL====")
-    (try
-      (let [{:keys [exit out err]} (eval `(clojure.java.shell/sh ~@(break-str cmd)
-                                                                 :dir ~(get-current-path)))]
-        (if (not= out "") (println out))
-        (if (not= err "") (println err)))
-      (catch Exception e
-        (println (.getMessage e))))))
+  (eval `(clojure.java.shell/sh ~@(break-str cmd)
+                                :dir ~(get-current-path)
+                                :env ~(deref *shell_env*))))
+
+(defn- iswindow? [] (= "windows" (:os @*irepl_attr*)))
+
+(defn prnt-external-result
+  "Print external execution result."
+  [r]
+  (let [{:keys [exit out err]} r
+        out (if iswindow? (trim-cmd-prompt-from-output out) out)]
+    (if (not= out "") (println out))
+    (if (not= err "") (println err))))
+
+(def do-external
+  "Execute external cmd and print result."
+  (comp prnt-external-result exec-external))
