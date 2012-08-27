@@ -1,4 +1,21 @@
 
-----------------------华丽分割线： version 1.0e-10 ----------------------
+???1 establish test
+
+--------------------||2012-08-27, Version(1.0e-10)|| -----------------------
+1 add helper (internal) function '?'
+(XXXX - already there
+	2 [Windows] implement "dir xXx" which is case insensitive under Windows
+(XXXX - not apply. The user should use '! xxx & xxx' to execute chained cmd.
+	3 [Windows] implement cmd line separator '&' and '&&' 
+(XXXX - not apply. After so many times of experiments, author concludes that 
+        an opening OS shell benefit little to iRepl; and still can not implement
+        it in an interactive way.... :(
+	4 A mimic OS shell - keep an OS shell open all the time
+
+--------------------||2012-08-22, Version(1.0e-10)|| -----------------------
+1 add env-variables and 'set' command
+2 formalizing level 0
+
+--------------------||2012-08-21, Version(1.0e-10)|| -----------------------                           
 1 initialize github repository
 2 basic source codes

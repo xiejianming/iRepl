@@ -6,12 +6,37 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns irepl.init
+  (:use [dbkid])
   (:use [irepl.utils])
-  (:use [clojure.java.io :only [file]]))
+  (:use [clojure.java.io :only [file]])
+  (:use [clojure.string :only [split-lines]]))
 
 (def ^:dynamic *builtins* (atom nil))
 (def ^:dynamic *irepl_attr* (atom nil))
 (def ^:dynamic *shell_env* (atom nil))
+
+(defn ihelp
+  "iRepl help function."
+  [^String s]
+  (if (empty? s)
+    (do
+      (println "Please type a \"?\" to start....")
+      (println "    ?       - shows this message again.")
+      (println "    ? xxx   - shows doc info of cmd \"xxx\".")
+      (println "    ? *     - shows all available cmds."))    
+    (case s
+      "*" (clojure.pprint/print-table 
+            [:name :desc]
+            (loop [lst (sort @*builtins*) rows []]
+              (if (empty? lst)
+                rows
+                (let [[k v] (first lst)]
+                  (dbk k v)
+                  (recur (rest lst)
+                         (conj rows
+                               {:name k
+                                :desc (first (split-lines (or (:doc (meta v)) "")))}))))))             
+      (println (:doc (meta (@*builtins* s)))))))
 
 ;;<<<<<<<<<< Working Directory <<<<<<<<<<
 (def ^:dynamic *wd* (atom nil))
@@ -21,8 +46,13 @@
 (defn init-wd [] (set-wd (@*irepl_attr* :home)))
 (defn get-parent-path[] (.getParent @*wd*))
 (defn get-current-path[] (.getCanonicalPath @*wd*))
-(defn pwd [& _] (println (.getCanonicalPath @*wd*)))
-(defn pwd-p [& _] 
+(defn pwd 
+  "Show current working directory."
+  [& _] 
+  (println (.getCanonicalPath @*wd*)))
+(defn pwd-p 
+  "Show parent directory of current directory."
+  [& _] 
   (let [parent (.getParent @*wd*)]
     (if (nil? parent)
       (println "You're in the top directory already.")
@@ -70,18 +100,19 @@
   (+internal . pwd)
   (+internal .. pwd-p)
   (+internal pwd pwd)
+  (+internal ? ihelp)
   nil)
 
 (defn init-windows
   "Init env and load cmds for Windows."
   []
-  (gdb "Loading cmds for Windows...")
+  (dbk "Loading cmds for Windows...")
   (use 'irepl.windows.core :reload))
 
 (defn init-linux
   "Init env and load cmds for Linux."
   []
-  (gdb "Loading cmds for Linux..."))
+  (dbk "Loading cmds for Linux..."))
 
 (defn init 
   "Initialize."
@@ -112,11 +143,12 @@
 (defn prnt-external-result
   "Print external execution result."
   [r]
-  (let [{:keys [exit out err]} r
-        out (if iswindow? (trim-cmd-prompt-from-output out) out)]
+  (let [{:keys [exit out err]} r]
     (if (not= out "") (println out))
     (if (not= err "") (println err))))
 
 (def do-external
   "Execute external cmd and print result."
   (comp prnt-external-result exec-external))
+
+

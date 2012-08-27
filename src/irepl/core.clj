@@ -6,6 +6,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns irepl.core
+  (:use [dbkid])
   (:use [irepl.utils])
   (:use [clojure.string :only [triml]])
   (:use [irepl.init]))
@@ -27,7 +28,7 @@
   "Execute cmd as internal(this iREPL call) program."
   [name opts]
   (let [f (@*builtins* name)]
-    ;(gdb "====INTERNAL====" (type f))
+    (dbk f (internal? name) opts)
     (if (:macro (meta f))
       (eval (@f nil nil opts))
       (f opts))))
@@ -37,7 +38,7 @@
   [^String cmd]
   (try
     (let [o-form (read-string cmd)]
-      ;(gdb "====NORMAL====")
+      ;(dbk "====NORMAL====")
       (println (eval o-form)))
     (catch Exception e
       (let [idn "EOF while reading"
@@ -63,8 +64,9 @@
         exit-cmd #{"8" "88" "quit" "q" "Q" "bye"}]
     (init)
     (loop [cmd (ask (get-current-path))]
+      (println)
       (if (empty? (.trim cmd))
-        (recur (ask (get-current-path)))
+        (recur (ask (str \newline (get-current-path))))
         (if (exit-cmd cmd)
           (do 
             (clean-up)
@@ -73,7 +75,7 @@
             (try 
               (exec cmd)
               (catch Exception e
-                (println (.getMessage e))))
-            (recur (ask (get-current-path)))))))))
+                (println (.toString e))))
+            (recur (ask (str \newline (get-current-path))))))))))
 
-#_(do (use 'irepl.core) (in-ns 'irepl.core) (irepl))
+#_(do (use 'irepl.core :reload) (in-ns 'irepl.core) (irepl))

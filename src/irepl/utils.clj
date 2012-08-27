@@ -5,7 +5,9 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns irepl.utils)  
+(ns irepl.utils
+  (:use [clojure.string :only [split-lines]])
+  (:use [dbkid]))  
 
 (defn construct-str-cmd
   "To construct a string cmd with space as separator."
@@ -15,19 +17,6 @@
             (apply 
               interleave (repeat (count opts) " ")
               opts))))
-
-(defn trim-cmd-prompt-from-output
-  "**For Windows ONLY**
-   Trim out last two lines(they're prompt line of cmd console) of the result will be trimed.
-   Note: \\r\\n will be kept for pretty printing."
-  [^String out]
-  (if (not= out "")
-    (let [idx (.lastIndexOf out "\r\n")]
-      (subs out 0 idx))))
-
-(def trim-n-break-cmd-output
-  "Same as 'trim-cmd-prompt-from-output' except that no \\r\\n will be kept."
-  (comp (partial drop-last 2) clojure.string/split-lines))
 
 (defn break-str
   "Put non-space string into array."
@@ -53,32 +42,3 @@
   "To check if a given symbol presents a macro or not."
   [s]
   `(:macro (meta #'~s)))
-
-;;<<<<<<<<<< debugger <<<<<<<<<<
-(defn now
-  "Get current time in format <yyyy-MM-dd HH:mm:ss>."
-  []
-  (.format 
-    (java.text.SimpleDateFormat. "yyyy-MM-dd HH:mm:ss")
-    (.getTime (java.util.Calendar/getInstance))))
-
-(def ^:dynamic *debug-flag* true)
-(def ^:dynamic *debug-print-length* 5)
-
-(defmacro gdb
-  "Print debug info(universal/global debugger)."
-  [& variables]
-  (if *debug-flag*
-    (let [datetime (now)
-          naked-msg (str "Debug: " datetime " in " *file* "@" (:line (meta &form)))]
-      (if (empty? variables)
-        (println naked-msg)
-        `(binding [*print-length* *debug-print-length*]
-           (let [kvs# (into {} (map vec (partition 2 (interleave 
-                                                       (map #(str % " =>") '~variables)
-                                                       (vector ~@variables)))))]
-             (println (str ~naked-msg ":") kvs#)
-             ;(last (first kvs#))
-             ))))))
-
-;;>>>>>>>>>> debugger >>>>>>>>>>
