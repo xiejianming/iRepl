@@ -15,29 +15,6 @@
 (def ^:dynamic *irepl_attr* (atom nil))
 (def ^:dynamic *shell_env* (atom nil))
 
-(defn ihelp
-  "iRepl help function."
-  [^String s]
-  (if (empty? s)
-    (do
-      (println "Please type a \"?\" to start....")
-      (println "    ?       - shows this message again.")
-      (println "    ? xxx   - shows doc info of cmd \"xxx\".")
-      (println "    ? *     - shows all available cmds."))    
-    (case s
-      "*" (clojure.pprint/print-table 
-            [:name :desc]
-            (loop [lst (sort @*builtins*) rows []]
-              (if (empty? lst)
-                rows
-                (let [[k v] (first lst)]
-                  (dbk k v)
-                  (recur (rest lst)
-                         (conj rows
-                               {:name k
-                                :desc (first (split-lines (or (:doc (meta v)) "")))}))))))             
-      (println (:doc (meta (@*builtins* s)))))))
-
 ;;<<<<<<<<<< Working Directory <<<<<<<<<<
 (def ^:dynamic *wd* (atom nil))
 (defn set-wd 
@@ -59,6 +36,59 @@
       (println parent))))
 
 ;;>>>>>>>>>> Working Directory >>>>>>>>>>
+
+(defn exec-external
+  "Execute cmd as external(system call) program."
+  [^String cmd]
+  (eval `(clojure.java.shell/sh ~@(break-str cmd)
+                                :dir ~(get-current-path)
+                                :env ~(deref *shell_env*))))
+
+(defn prnt-external-result
+  "Print external execution result."
+  [r]
+  (let [{:keys [exit out err]} r]
+    (if (not= out "") (println out))
+    (if (not= err "") (println err))))
+
+(def do-external
+  "Execute external cmd and print result."
+  (comp prnt-external-result exec-external))
+
+(defn ihelp
+  "iRepl help function."
+  [^String s]
+  (if (empty? s)
+    (do
+      (println "Please type a \"?\" to start....")
+      (println "  ?         - Show this message again.")
+      (println "  ??        - Show all available iRepl commands.")
+      (println "  ? xxx     - Show doc info of cmd \"xxx\".")
+      (println "  ! [xxx]   - Toggle sh-mode or execute external cmd \"xxx\" directly.")
+      (println "  q         - Quit iRepl."))    
+    (case s
+      "*" (clojure.pprint/print-table 
+            [:name :desc]
+            (loop [lst (sort @*builtins*) rows []]
+              (if (empty? lst)
+                (conj rows
+                      {:name "Quit iRepl" 
+                       :desc "Type one of these to quit iRepl: 8/88/quit/q/Q/bye"})
+                (let [[k v] (first lst)]
+                  (dbk k v)
+                  (recur (rest lst)
+                         (conj rows
+                               {:name k
+                                :desc (first (split-lines (or (:doc (meta v)) "")))}))))))             
+      (let [btin (@*builtins* s)]
+        (if btin 
+          (println (:doc (meta (@*builtins* s))))
+          (do-external (str "help " s)))))))
+
+(defn iihelp
+  "Show all available iRepl commands."
+  [^String s]
+  (ihelp "*"))
 
 (defmacro +internal
   "Register a function/macro as iRepl internal cmd."
@@ -101,6 +131,8 @@
   (+internal .. pwd-p)
   (+internal pwd pwd)
   (+internal ? ihelp)
+  (+internal ?? iihelp)
+  (+internal shutup db)
   nil)
 
 (defn init-windows
@@ -130,25 +162,5 @@
   (reset! *irepl_attr* nil)
   (reset! *shell_env* nil)
   (reset! *wd* nil))
-
-(defn exec-external
-  "Execute cmd as external(system call) program."
-  [^String cmd]
-  (eval `(clojure.java.shell/sh ~@(break-str cmd)
-                                :dir ~(get-current-path)
-                                :env ~(deref *shell_env*))))
-
-(defn- iswindow? [] (= "windows" (:os @*irepl_attr*)))
-
-(defn prnt-external-result
-  "Print external execution result."
-  [r]
-  (let [{:keys [exit out err]} r]
-    (if (not= out "") (println out))
-    (if (not= err "") (println err))))
-
-(def do-external
-  "Execute external cmd and print result."
-  (comp prnt-external-result exec-external))
 
 

@@ -16,8 +16,14 @@
 
 (def ^:dynamic *debug-flag* (atom true))
 
-(defn enable-db [] (reset! *debug-flag* true))
-(defn disable-db [] (reset! *debug-flag* false))
+(defn db 
+  "Disable/Enable DBK which used to print debug info."
+  [& _] 
+  (reset! *debug-flag* (not @*debug-flag*)) 
+  (println (str "DBK is now "
+                (if @*debug-flag*
+                  "Enabled!"
+                  "Disabled!"))))
 
 (def ^:dynamic *debug-print-length* (atom 5))
 

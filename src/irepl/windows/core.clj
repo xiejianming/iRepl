@@ -9,7 +9,10 @@
   (:use [dbkid])
   (:use [clojure.java.io :only [file]])
   (:use [irepl.utils])
-  (:use [irepl.init]))
+  (:use [irepl.init])
+  (:use [irepl.windows.oshell])
+  (:use [clojure.string :only [triml]]))
+
 
 ;;<<<<<<<<<< system shell env <<<<<<<<<<
 (reset! *shell_env* {})
@@ -99,3 +102,30 @@
 
 (+internal ls ls)
 (+internal dir ls)
+
+(defn ext!
+  "Toggle sh-mode or execute external cmd \"xxx\" directly.
+**NOTE**: interactive task will hang the whole programe!!!"
+  [^String s]
+  (println "
+  ****/////////////////////////////////////////////////////////////
+  ****
+  **** DON'T perform any interactive task!!! This will KILL iRepl. 
+  ****
+  ****/////////////////////////////////////////////////////////////
+")
+  (restart-osh)
+  (if (empty? s)  
+    (let [ask (fn [] 
+                (print (str (osh-pwd) "[SH]> ")) 
+                (.flush *out*) 
+                (triml (read-line)))]
+      (loop [cmd (ask)]
+        (if (not= cmd "!")
+          (do
+            (osh cmd :print)
+            (recur (ask))))))
+    (osh s :print))
+  (kill-osh))
+
+(+internal ! ext!)

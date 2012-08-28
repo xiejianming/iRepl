@@ -9,7 +9,8 @@
   (:use [dbkid])
   (:use [irepl.utils])
   (:use [clojure.string :only [triml]])
-  (:use [irepl.init]))
+  (:use [irepl.init]) 
+  (:use [clojure.repl]))
 
 (defn ask
   "Ask for an input."
@@ -17,7 +18,7 @@
   ([^String prompt]
     (printf "%s: " prompt)
     (flush)
-    (.readLine *in*)))
+    (read-line)))
   
 (defn- internal?
   "Check to see if a given cmd is internal commands or not."

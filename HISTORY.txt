@@ -1,8 +1,14 @@
 
 ???1 establish test
 
+--------------------||2012-08-28, Version(1.0e-10)|| -----------------------
+1 formalizing 2
+2 improved help function '?'
+3 [Windows] add mimic OS shell to perform responsive task such as ping.
+4 add internal function 'shutup' to dynamically enable/disable debug info printing.
+
 --------------------||2012-08-27, Version(1.0e-10)|| -----------------------
-1 add helper (internal) function '?'
+1 add help (internal) function '?'
 (XXXX - already there
 	2 [Windows] implement "dir xXx" which is case insensitive under Windows
 (XXXX - not apply. The user should use '! xxx & xxx' to execute chained cmd.
