@@ -13,7 +13,6 @@
   (:use [irepl.windows.oshell])
   (:use [clojure.string :only [triml]]))
 
-
 ;;<<<<<<<<<< system shell env <<<<<<<<<<
 (reset! *shell_env* {})
 (defn- get-shell-env
@@ -29,7 +28,7 @@
   "To display/set/unset env variables(a mimic set command in cmd.exe).
    Usage: set [name[=[value]]]
      - a \"set\" without any parameter will print all env variables;
-     - \"set name\" will print variables(with their values) with their names contain \"name\";
+     - \"set name\" will print variables which starts with \"name\"(case insensitive);
      - \"set name=\" will unset the variable;
      - \"set name=value\" will set env variable \"name\", in which:
            - any form of \"%v-name%\" will be replace by their value respectively.
@@ -44,7 +43,7 @@
           (recur (next m)))))
     (let [idx (.indexOf opts "=")]
       (if (= idx -1)
-        (let [s (filter #(> (.indexOf (first %) opts) -1) @*shell_env*)]          
+        (let [s (filter #(= (.indexOf (.toLowerCase (first %)) (.toLowerCase opts)) 0) @*shell_env*)]          
           (if (empty? s)
             (println (str "Environment variable " opts " not defined."))
             (loop [ss s]
@@ -107,6 +106,12 @@
   "Toggle sh-mode or execute external cmd \"xxx\" directly.
 **NOTE**: interactive task will hang the whole programe!!!"
   [^String s]
+  (restart-osh)
+  (if (empty? s)  
+    (let [ask (fn [] 
+                (print (str (osh-pwd) "[SH]> ")) 
+                (.flush *out*) 
+                (triml (read-line)))]
   (println "
   ****/////////////////////////////////////////////////////////////
   ****
@@ -114,12 +119,6 @@
   ****
   ****/////////////////////////////////////////////////////////////
 ")
-  (restart-osh)
-  (if (empty? s)  
-    (let [ask (fn [] 
-                (print (str (osh-pwd) "[SH]> ")) 
-                (.flush *out*) 
-                (triml (read-line)))]
       (loop [cmd (ask)]
         (if (not= cmd "!")
           (do
@@ -129,3 +128,15 @@
   (kill-osh))
 
 (+internal ! ext!)
+
+(defn cmd-ping
+  "Cmd \"ping\" wrapper. See \"!ping /?\"."
+  [^String s]
+  (ext! (str "ping " s)))
+(+internal ping cmd-ping)
+
+(defn cmd-tasklist
+  "Cmd \"tasklist\" wrapper. See \"? tasklist\""
+  [^String s]
+  (do-external (str "tasklist " s)))
+(+internal ps cmd-tasklist)

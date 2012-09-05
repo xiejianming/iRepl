@@ -1,6 +1,10 @@
 
 ???1 establish test
 
+--------------------||2012-09-05, Version(1.0e-9)|| -----------------------
+1 [Windows] improved "set" command to make it case insensitive.
+2 add "$${}" operator.
+
 --------------------||2012-08-28, Version(1.0e-10)|| -----------------------
 1 formalizing 2
 2 improved help function '?'

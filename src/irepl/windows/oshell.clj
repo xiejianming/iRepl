@@ -63,9 +63,9 @@
 
 ;; start a shell & make any output (including err) available
 (defn- init-osh []  
-  (def ^{:private true} oss (start-os-shell))
-  (def ^{:private true} oss-do (:exe oss))
-  (def ^{:private true} oss-die (:close oss))
+  (def ^:private oss (start-os-shell))
+  (def ^:private oss-do (:exe oss))
+  (def ^:private oss-die (:close oss))
   nil)
 
 

@@ -14,6 +14,7 @@
 (def ^:dynamic *builtins* (atom nil))
 (def ^:dynamic *irepl_attr* (atom nil))
 (def ^:dynamic *shell_env* (atom nil))
+(def ^:dynamic *responsive_tasks* (atom nil))
 
 ;;<<<<<<<<<< Working Directory <<<<<<<<<<
 (def ^:dynamic *wd* (atom nil))
@@ -43,6 +44,7 @@
   (eval `(clojure.java.shell/sh ~@(break-str cmd)
                                 :dir ~(get-current-path)
                                 :env ~(deref *shell_env*))))
+(def sh exec-external) ;; short-cut to call clojure.java.shell/sh
 
 (defn prnt-external-result
   "Print external execution result."
@@ -72,7 +74,10 @@
             (loop [lst (sort @*builtins*) rows []]
               (if (empty? lst)
                 (conj rows
-                      {:name "Quit iRepl" 
+                      {:name "$${xxx}"
+                       :desc "Extraction operator to extract (a String) result from OS/Clojure call." 
+                       }
+                      {:name "Quit" 
                        :desc "Type one of these to quit iRepl: 8/88/quit/q/Q/bye"})
                 (let [[k v] (first lst)]
                   (dbk k v)
@@ -117,22 +122,35 @@
   [^String vname]
   (minus *shell_env* vname))
 
+(defmacro +rtask
+  "Add responsive task."
+  [tname]
+  `(swap! *responsive_tasks* conj (name '~tname)))
+(defmacro -rtask
+  "Remove responsive task."
+  [tname]
+  `(swap! *responsive_tasks* disj (name '~tname)))
+
 (defn init-common
   "Init env and load cmd for common use."
   []
-  (reset! *builtins* {})
   (reset! *irepl_attr* {})
   (+attr :os (get-os-name))
   (+attr :home (System/getProperty "user.home"))
   (+attr :dir (System/getProperty "user.dir"))
   (init-wd)
   
+  (reset! *builtins* {})
   (+internal . pwd)
   (+internal .. pwd-p)
   (+internal pwd pwd)
   (+internal ? ihelp)
   (+internal ?? iihelp)
+  (+internal help ihelp)
   (+internal shutup db)
+  
+  (reset! *responsive_tasks* #{})
+  (+rtask ping)
   nil)
 
 (defn init-windows
