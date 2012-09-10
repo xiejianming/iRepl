@@ -38,14 +38,13 @@
   "Execute Clojure codes."
   [^String cmd]
   (try
-    (let [o-form (read-string cmd)]
-      ;(dbk "====NORMAL====")
+    (let [o-form (read-string (str "(do " cmd ")"))]
       (eval o-form))
     (catch Exception e
       (let [idn "EOF while reading"
-            msg (subs (.getMessage e) 0 17)]
-        (if (= idn msg)
-          (exec-clj (str cmd "\n" (.readLine *in*)))
+            msg (.getMessage e)]        
+        (if (not= (.indexOf msg idn) -1)
+          (exec-clj (str cmd \newline (.readLine *in*)))
           (throw e))))))
 
 (defn- exec [^String cmd & opts]  

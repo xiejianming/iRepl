@@ -1,5 +1,8 @@
 
 ???1 establish test
+--------------------||2012-09-10, Version(1.0e-9)|| -----------------------
+1 Bug-fix: read-string only read one object from string, we fix it by adding
+           do- wrapper in function exec-clj.
 
 --------------------||2012-09-05, Version(1.0e-9)|| -----------------------
 1 [Windows] improved "set" command to make it case insensitive.
