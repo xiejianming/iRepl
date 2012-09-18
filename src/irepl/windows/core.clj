@@ -96,14 +96,15 @@
 (defn ls
   "List all files under current directory."
   [^String opts]
-  (do-external 
-    (construct-str-cmd "cmd /c dir" (break-str opts))))
+  (prnt-external-result 
+    (exec-external 
+      (construct-str-cmd "dir" (break-str opts)))))
 
 (+internal ls ls)
 (+internal dir ls)
 
-(defn ext!
-  "Toggle sh-mode or execute external cmd \"xxx\" directly.
+#_(defn ext!
+  "Toggle sh-mode or execute external cmd \"xxx\" directly(no popup).
 **NOTE**: interactive task will hang the whole programe!!!"
   [^String s]
   (restart-osh)
@@ -120,23 +121,31 @@
   ****/////////////////////////////////////////////////////////////
 ")
       (loop [cmd (ask)]
-        (if (not= cmd "!")
+        (if (not= cmd "!!")
           (do
             (osh cmd :print)
             (recur (ask))))))
     (osh s :print))
   (kill-osh))
 
-(+internal ! ext!)
+#_(+internal !! ext!)
 
-(defn cmd-ping
+(defn open-cmd
+  "Open a cmd window or execute external cmd \"xxx\" in a popup window."
+  [^String s]
+  (exec-external "start cmd"))
+
+(+internal ! open-cmd)
+
+#_(defn cmd-ping
   "Cmd \"ping\" wrapper. See \"!ping /?\"."
   [^String s]
   (ext! (str "ping " s)))
-(+internal ping cmd-ping)
 
-(defn cmd-tasklist
+#_(+internal ping cmd-ping)
+
+#_(defn cmd-tasklist
   "Cmd \"tasklist\" wrapper. See \"? tasklist\""
   [^String s]
   (do-external (str "tasklist " s)))
-(+internal ps cmd-tasklist)
+#_(+internal ps cmd-tasklist)

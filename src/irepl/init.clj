@@ -14,7 +14,6 @@
 (def ^:dynamic *builtins* (atom nil))
 (def ^:dynamic *irepl_attr* (atom nil))
 (def ^:dynamic *shell_env* (atom nil))
-(def ^:dynamic *responsive_tasks* (atom nil))
 
 ;;<<<<<<<<<< Working Directory <<<<<<<<<<
 (def ^:dynamic *wd* (atom nil))
@@ -38,13 +37,26 @@
 
 ;;>>>>>>>>>> Working Directory >>>>>>>>>>
 
-(defn exec-external
+(defn- sh
   "Execute cmd as external(system call) program."
   [^String cmd]
   (eval `(clojure.java.shell/sh ~@(break-str cmd)
                                 :dir ~(get-current-path)
                                 :env ~(deref *shell_env*))))
-(def sh exec-external) ;; short-cut to call clojure.java.shell/sh
+
+(defn exec-external
+  [^String cmd]
+  (let [cmd (case (:os @*irepl_attr*)
+              "windows" (str "cmd /c " cmd)
+              "others")]
+    (sh cmd)))
+
+(defn do-external
+  [^String cmd]
+  (let [cmd (case (:os @*irepl_attr*)
+              "windows" (str "cmd /c start cmd /c \"" cmd "&echo.&pause\"")
+              "others")]
+    (sh cmd)))
 
 (defn prnt-external-result
   "Print external execution result."
@@ -53,7 +65,7 @@
     (if (not= out "") (println out))
     (if (not= err "") (println err))))
 
-(def do-external
+#_(def do-external
   "Execute external cmd and print result."
   (comp prnt-external-result exec-external))
 
@@ -63,20 +75,18 @@
   (if (empty? s)
     (do
       (println "Please type a \"?\" to start....")
-      (println "  ?         - Show this message again.")
+      (println "  ? [xxx]   - Show this message or doc info of cmd \"xxx\".")
       (println "  ??        - Show all available iRepl commands.")
-      (println "  ? xxx     - Show doc info of cmd \"xxx\".")
-      (println "  ! [xxx]   - Toggle sh-mode or execute external cmd \"xxx\" directly.")
-      (println "  q         - Quit iRepl."))    
+      (println "  ! [xxx]   - Open a cmd window or execute external cmd \"xxx\" in a popup window.")
+      (println "  q         - Quit iRepl."))  
     (case s
       "*" (clojure.pprint/print-table 
             [:name :desc]
             (loop [lst (sort @*builtins*) rows []]
               (if (empty? lst)
-                (conj rows
+                (conj rows                      
                       {:name "$${xxx}"
-                       :desc "Extraction operator to extract (a String) result from OS/Clojure call." 
-                       }
+                       :desc "Extraction operator to extract (a String) result from OS/Clojure call."}
                       {:name "Quit" 
                        :desc "Type one of these to quit iRepl: 8/88/quit/q/Q/bye"})
                 (let [[k v] (first lst)]
@@ -88,7 +98,7 @@
       (let [btin (@*builtins* s)]
         (if btin 
           (println (:doc (meta (@*builtins* s))))
-          (do-external (str "help " s)))))))
+          (prnt-external-result (sh (str "help " s))))))))
 
 (defn iihelp
   "Show all available iRepl commands."
@@ -122,15 +132,6 @@
   [^String vname]
   (minus *shell_env* vname))
 
-(defmacro +rtask
-  "Add responsive task."
-  [tname]
-  `(swap! *responsive_tasks* conj (name '~tname)))
-(defmacro -rtask
-  "Remove responsive task."
-  [tname]
-  `(swap! *responsive_tasks* disj (name '~tname)))
-
 (defn init-common
   "Init env and load cmd for common use."
   []
@@ -149,8 +150,6 @@
   (+internal help ihelp)
   (+internal shutup db)
   
-  (reset! *responsive_tasks* #{})
-  (+rtask ping)
   nil)
 
 (defn init-windows

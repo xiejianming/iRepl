@@ -1,5 +1,16 @@
 
 ???1 establish test
+--------------------||2012-09-18, Version(1.0e-8)|| -----------------------
+1 Make "!" a pop-up windows call (for windows).
+2 Remove ping & ps
+3 Modified ls(a.k.a. dir)
+4 Improved help function
+5 Bug-fix: fixed exception will stop iRepl while performing extraction by using
+  extractor. E.g. $${abc} will throw exception and stop iRepl.  
+
+--------------------||2012-09-14, Version(1.0e-9)|| -----------------------
+1 Bug-fix: fix AssertionError catching
+
 --------------------||2012-09-10, Version(1.0e-9)|| -----------------------
 1 Bug-fix: read-string only read one object from string, we fix it by adding
            do- wrapper in function exec-clj.

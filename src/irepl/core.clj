@@ -34,12 +34,28 @@
       (eval (@f nil nil opts))
       (f opts))))
 
+(defn- str-repl
+  "A mimic repl read code from given string. A vector containing results will be returned."
+  [^String s]
+  (with-open [in (-> (java.io.StringReader. s) clojure.lang.LineNumberingPushbackReader.)]
+    (loop [rs []]
+      (let [v (eval (read in))]
+        (if (= v :__let-me-out)
+          rs
+          (recur (conj rs v)))))))
+
+(declare parse)
+
 (defn- exec-clj
   "Execute Clojure codes."
   [^String cmd]
   (try
-    (let [o-form (read-string (str "(do " cmd ")"))]
+    #_(let [o-form (read-string (str "(do " (parse cmd) ")"))]
       (eval o-form))
+    (let [rs (str-repl (str (parse cmd) " :__let-me-out"))]
+      (if (> (count rs) 1)
+        rs
+        (first rs)))
     (catch Exception e
       (let [idn "EOF while reading"
             msg (.getMessage e)]        
@@ -54,7 +70,7 @@
       (if (= \! (first name))
         (if (empty? opts)
           (do-external (subs (triml cmd) 1))
-          (exec-external (subs (triml cmd) 1)))
+          (exec-external (subs (triml cmd) 1)))                   
         (if (empty? opts)
           (println (exec-clj cmd))
           (exec-clj cmd))))))
@@ -79,7 +95,7 @@
   (println "
   ****/////////////////////////////////////////////////////////////
   ****
-  ****      Welcome to iRepl. Please type \"?\" to start..... 
+  ****      Welcome to iRepl. You could type \"?\" to start..... 
   ****
   ****/////////////////////////////////////////////////////////////
 ")  
@@ -88,21 +104,22 @@
                  (first p))
         exit-cmd #{"8" "88" "quit" "q" "Q" "bye"}]
     (init)
-    (loop [input (ask (get-current-path))]
-      (let [cmd (parse input)]
-        (println)
-        (if (blank? cmd)
-          (recur (ask (str \newline (get-current-path))))
-          (if (exit-cmd cmd)
-            (do 
-              (clean-up)
-              (println "Quiting iRepl...."))
-            (do 
-              (try 
-                (exec cmd)
-                (catch Exception e 
-                  #_(.printStackTrace e)
-                  (println (.toString e))))
-              (recur (ask (str \newline (get-current-path)))))))))))
+    (loop [cmd (ask (get-current-path))]
+      ;(println)
+      (if (blank? cmd)
+        (recur (ask (str \newline (get-current-path))))
+        (if (exit-cmd cmd)
+          (do 
+            (clean-up)
+            (println "Quiting iRepl...."))
+          (do 
+            (try 
+              (exec (parse cmd))
+              (catch AssertionError e
+                (println (.toString e)))
+              (catch Exception e 
+                #_(.printStackTrace e)
+                (println (.toString e))))
+            (recur (ask (str \newline (get-current-path))))))))))
 
 #_(do (use 'irepl.core :reload) (in-ns 'irepl.core) (irepl))
