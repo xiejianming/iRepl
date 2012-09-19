@@ -1,5 +1,15 @@
 
 ???1 establish test
+
+
+--------------------||2012-09-19, Version(1.0e-7)|| -----------------------
+1 Bug-fix: fixed duplicated evaluation of input if the input is not a complete
+  one. E.g. "(println 123)" in "(println 123) (println 456" will be computed 
+  twice when iRepl require a further input(the missing ")") to make the whole 
+  to complete.
+2 Added *1/*2/*3 and *e into iRepl
+3 Improved iRepl's help function
+
 --------------------||2012-09-18, Version(1.0e-8)|| -----------------------
 1 Make "!" a pop-up windows call (for windows).
 2 Remove ping & ps

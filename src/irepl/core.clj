@@ -35,14 +35,15 @@
       (f opts))))
 
 (defn- str-repl
-  "A mimic repl read code from given string. A vector containing results will be returned."
+  "A mimic repl read code from given string. 
+A vector containing unevaluated forms will be returned."
   [^String s]
   (with-open [in (-> (java.io.StringReader. s) clojure.lang.LineNumberingPushbackReader.)]
     (loop [rs []]
-      (let [v (eval (read in))]
-        (if (= v :__let-me-out)
+      (let [o (read in)]
+        (if (= o :__let-me-out)
           rs
-          (recur (conj rs v)))))))
+          (recur (conj rs o)))))))
 
 (declare parse)
 
@@ -52,9 +53,10 @@
   (try
     #_(let [o-form (read-string (str "(do " (parse cmd) ")"))]
       (eval o-form))
-    (let [rs (str-repl (str (parse cmd) " :__let-me-out"))]
+    (let [os (str-repl (str (parse cmd) " :__let-me-out"))
+          rs (map #(let [v (eval %)] (set! *3 *2) (set! *2 *1) (set! *1 v)) os)]
       (if (> (count rs) 1)
-        rs
+        (vec rs)
         (first rs)))
     (catch Exception e
       (let [idn "EOF while reading"
@@ -99,10 +101,7 @@
   ****
   ****/////////////////////////////////////////////////////////////
 ")  
-  (let [prompt (if (empty? p)
-                 "iREPL"
-                 (first p))
-        exit-cmd #{"8" "88" "quit" "q" "Q" "bye"}]
+  (let [exit-cmd #{"8" "88" "quit" "q" "Q" "bye"}]
     (init)
     (loop [cmd (ask (get-current-path))]
       ;(println)
@@ -115,11 +114,10 @@
           (do 
             (try 
               (exec (parse cmd))
-              (catch AssertionError e
-                (println (.toString e)))
-              (catch Exception e 
+              (catch Throwable e 
                 #_(.printStackTrace e)
-                (println (.toString e))))
+                (println (.toString e))
+                (set! *e e)))
             (recur (ask (str \newline (get-current-path))))))))))
 
 #_(do (use 'irepl.core :reload) (in-ns 'irepl.core) (irepl))

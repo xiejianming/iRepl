@@ -75,7 +75,7 @@
   (if (empty? s)
     (do
       (println "Please type a \"?\" to start....")
-      (println "  ? [xxx]   - Show this message or doc info of cmd \"xxx\".")
+      (println "  ? [xxx]   - Show this message or doc info of function/cmd \"xxx\".")
       (println "  ??        - Show all available iRepl commands.")
       (println "  ! [xxx]   - Open a cmd window or execute external cmd \"xxx\" in a popup window.")
       (println "  q         - Quit iRepl."))  
@@ -97,8 +97,11 @@
                                 :desc (first (split-lines (or (:doc (meta v)) "")))}))))))             
       (let [btin (@*builtins* s)]
         (if btin 
-          (println (:doc (meta (@*builtins* s))))
-          (prnt-external-result (sh (str "help " s))))))))
+          (println (:doc (meta (@*builtins* s)))) ;; check iRepl command first
+          (let [doc? (:doc (meta (resolve (symbol s))))]  ;; then check clojure functions
+            (if doc?
+              (eval (list 'doc (symbol s)))  ;; and finally check external commands
+              (prnt-external-result (sh (str "help " s))))))))))
 
 (defn iihelp
   "Show all available iRepl commands."
