@@ -11,14 +11,6 @@
   (:use [clojure.string :only [triml split replace-first blank?]])
   (:use [irepl.init]) 
   (:use [clojure.repl]))
-
-(defn ask
-  "Ask for an input."
-  ([] (ask "Please Input"))
-  ([^String prompt]
-    (printf "%s: " prompt)
-    (flush)
-    (read-line)))
   
 (defn- internal?
   "Check to see if a given cmd is internal commands or not."

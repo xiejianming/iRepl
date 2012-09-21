@@ -1,6 +1,12 @@
 
 ???1 establish test
 
+--------------------||2012-09-21, Version(1.0e-7)|| -----------------------
+1 Changed initialization of *shell_env* from external system call (OS dependent)
+  to Java System/getenv call (OS independent). Old code of this part is depreciated.
+2 Added personal tool kit.
+3 Bug-fix: fixed "set" (in Windows) to case insensitive.
+4 Improved "cmd-set" 
 
 --------------------||2012-09-19, Version(1.0e-7)|| -----------------------
 1 Bug-fix: fixed duplicated evaluation of input if the input is not a complete

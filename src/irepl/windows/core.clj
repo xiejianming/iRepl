@@ -11,18 +11,27 @@
   (:use [irepl.utils])
   (:use [irepl.init])
   (:use [irepl.windows.oshell])
-  (:use [clojure.string :only [triml]]))
+  (:use [clojure.string :only [triml lower-case] :as strn]))
 
 ;;<<<<<<<<<< system shell env <<<<<<<<<<
-(reset! *shell_env* {})
-(defn- get-shell-env
+#_(reset! *shell_env* {})
+#_(defn- get-shell-env
   "Get shell env variables."
   []
   (let [env (clojure.string/split-lines  
               (:out (clojure.java.shell/sh "cmd" "/c" "set")))]
     (reduce #(conj %1 (vec (.split %2 "="))) {} env)))
 
-(reset! *shell_env* (get-shell-env))
+#_(reset! *shell_env* (get-shell-env))
+
+(defn- lookup-env-name
+  "Lookup env by given name. The name is case insensitive under Windows."
+  [^String name]
+  (or (first 
+        (filter 
+          #(= (lower-case %) (lower-case name)) 
+          (keys @*shell_env*))) 
+      name))
 
 (defn cmd-set
   "To display/set/unset env variables(a mimic set command in cmd.exe).
@@ -43,7 +52,7 @@
           (recur (next m)))))
     (let [idx (.indexOf opts "=")]
       (if (= idx -1)
-        (let [s (filter #(= (.indexOf (.toLowerCase (first %)) (.toLowerCase opts)) 0) @*shell_env*)]          
+        (let [s (filter #(= (.indexOf (lower-case (first %)) (lower-case opts)) 0) @*shell_env*)]          
           (if (empty? s)
             (println (str "Environment variable " opts " not defined."))
             (loop [ss s]
@@ -51,15 +60,15 @@
                 (do
                   (println (str k "=" v))
                   (recur (next ss)))))))
-        (let [name (subs opts 0 idx)
+        (let [name (lookup-env-name (subs opts 0 idx))
               value (subs opts (inc idx))]
           (if (empty? value)
             (-env name)
             (+env name
-                  (clojure.string/replace value 
-                                          #"%\w+%" 
-                                          #(let [k (subs %1 1 (dec (count %1)))]
-                                             (@*shell_env* k ""))))))))))
+                  (strn/replace value 
+                                #"%\w+%" 
+                                #(let [k (lookup-env-name (subs %1 1 (dec (count %1))))]
+                                   (@*shell_env* k ""))))))))))
     
 (+internal set cmd-set)
 

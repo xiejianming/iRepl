@@ -139,6 +139,7 @@
   "Init env and load cmd for common use."
   []
   (reset! *irepl_attr* {})
+  (reset! *shell_env* (into {} (System/getenv)))
   (+attr :os (get-os-name))
   (+attr :home (System/getProperty "user.home"))
   (+attr :dir (System/getProperty "user.dir"))

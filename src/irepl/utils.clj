@@ -9,6 +9,14 @@
   (:use [clojure.string :only [split-lines]])
   (:use [dbkid]))  
 
+(defn ask
+  "Ask for an input."
+  ([] (ask "Please Input"))
+  ([^String prompt]
+    (printf "%s: " prompt)
+    (flush)
+    (read-line)))
+
 (defn construct-str-cmd
   "To construct a string cmd with space as separator."
   [name & opts] 
@@ -42,3 +50,32 @@
   "To check if a given symbol presents a macro or not."
   [s]
   `(:macro (meta #'~s)))
+
+;; >>>>>>>>>>>>> printing >>>>>>>>>>>>>>>>>
+(defn- rfill2
+  [^String s len] 
+  (apply str s (repeat (- len (count s)) " ")))
+(defn- lfill2
+  [^String s len] 
+  (str 
+    (loop [i (- len (count s)) spaces ""] 
+      (if (= i 0)
+        spaces
+        (recur (dec i) (str spaces " "))))
+    s))
+  
+(defn width-prn
+  [items]
+  (let [max-len (apply max (map count items))
+        cols (quot 80 (+ max-len 2))
+        sis (map #(rfill2 % max-len) (sort items))
+        line (apply str (repeat 80 "-"))]
+    (println (str 
+               (apply str line \newline
+                      (interleave sis (cycle (loop [i (dec cols) vs []]
+                                               (if (= i 0)
+                                                 (conj vs \newline)
+                                                 (recur (dec i) (conj vs " ")))))))
+               \newline line))))
+
+;; <<<<<<<<<<<<< printing <<<<<<<<<<<<<<<<<
