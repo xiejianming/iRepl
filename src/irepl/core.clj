@@ -26,17 +26,21 @@
       (eval (@f nil nil opts))
       (f opts))))
 
-(defn- str-repl
+(defn str-repl
   "A mimic repl read code from given string. 
 A vector containing unevaluated forms will be returned."
   [^String s]
-  (with-open [in (-> (java.io.StringReader. s) clojure.lang.LineNumberingPushbackReader.)]
-    (loop [rs []]
-      (let [o (read in)]
-        (if (= o :__let-me-out)
-          rs
-          (recur (conj rs o)))))))
-
+  (if (empty? s) 
+    ""
+    (let [s (str s " :__let-me-out")]
+      (with-open [in (-> (java.io.StringReader. s) 
+                       clojure.lang.LineNumberingPushbackReader.)]
+        (loop [rs []]
+          (let [o (read in)]
+            (if (= o :__let-me-out)
+              rs
+              (recur (conj rs o)))))))))
+  
 (declare parse)
 
 (defn- exec-clj
@@ -45,7 +49,7 @@ A vector containing unevaluated forms will be returned."
   (try
     #_(let [o-form (read-string (str "(do " (parse cmd) ")"))]
       (eval o-form))
-    (let [os (str-repl (str (parse cmd) " :__let-me-out"))
+    (let [os (str-repl (parse cmd))
           rs (map #(let [v (eval %)] (set! *3 *2) (set! *2 *1) (set! *1 v)) os)]
       (if (> (count rs) 1)
         (vec rs)
@@ -82,6 +86,10 @@ A vector containing unevaluated forms will be returned."
             (recur (.replace strn found 
                      (if result (.toString result) "")))))))))
     
+(defn explain
+  "Explain given string."
+  [^String cmd]
+  (exec (parse cmd) :silent))
 
 (defn irepl
   "Starts iRepl."

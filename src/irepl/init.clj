@@ -32,7 +32,7 @@
   [& _] 
   (let [parent (.getParent @*wd*)]
     (if (nil? parent)
-      (println "You're in the top directory already.")
+      (println "You're in top directory already.")
       (println parent))))
 
 ;;>>>>>>>>>> Working Directory >>>>>>>>>>
@@ -135,6 +135,11 @@
   [^String vname]
   (minus *shell_env* vname))
 
+(defn load-tools
+  "Load customed funs under folder tools."
+  []
+  )
+
 (defn init-common
   "Init env and load cmd for common use."
   []
@@ -154,6 +159,7 @@
   (+internal help ihelp)
   (+internal shutup db)
   
+  (load "tools/mytools")
   nil)
 
 (defn init-windows
