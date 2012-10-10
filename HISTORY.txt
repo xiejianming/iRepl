@@ -1,7 +1,10 @@
 
 ???1 establish test
---------------------||2012-09-??, Version(1.0e-7)|| -----------------------
+--------------------||2012-10-??, Version(1.0e-6)|| -----------------------
 ???1 Implement a nREPL client
+
+--------------------||2012-10-10, Version(1.0e-6)|| -----------------------
+1 fixed issue 2
 
 --------------------||2012-09-21, Version(1.0e-7)|| -----------------------
 1 Changed initialization of *shell_env* from external system call (OS dependent)

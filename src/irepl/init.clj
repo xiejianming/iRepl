@@ -69,6 +69,12 @@
   "Execute external cmd and print result."
   (comp prnt-external-result exec-external))
 
+(defn- is-clojure-fn
+  "Check if the given name is a Clojure fn name."
+  [^String n]
+  (let [cfs #{"quote"}]
+    (cfs n)))
+
 (defn ihelp
   "iRepl help function."
   [^String s]
@@ -99,7 +105,7 @@
         (if btin 
           (println (:doc (meta (@*builtins* s)))) ;; check iRepl command first
           (let [doc? (:doc (meta (resolve (symbol s))))]  ;; then check clojure functions
-            (if doc?
+            (if (or doc? (is-clojure-fn s))
               (eval (list 'doc (symbol s)))  ;; and finally check external commands
               (prnt-external-result (sh (str "help " s))))))))))
 
