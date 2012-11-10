@@ -10,7 +10,7 @@ us a system shell-like (here I have windows cmd.exe) console.
 
 You can also use iRepl as a normal REPL. The basic idea behind iRepl is to
 connect the real REPL with OS shell(but yes, it's just a mimic shell), so that we 
-can perform some system task occasionally.
+can perform some system tasks occasionally.
 
 To start iRepl, do:
     * make sure folder irepl is under your CLASSPATH
@@ -23,7 +23,7 @@ To start iRepl, do:
 When iRepl starts, it will show user home directory as the prompt, e.g.:
 	"C:\Users\xjm: "
 
-Now you can type "?" to exploring iRepl.
+Now you can type "?" to start exploring iRepl.
 
 ----------------------华丽分割线 ----------------------
 This tool is still under developing and just @ its initial stage. It might be
