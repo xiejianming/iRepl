@@ -140,11 +140,11 @@
 #_(+internal !! ext!)
 
 (defn open-cmd
-  "Open a cmd window or execute external cmd \"xxx\" in a popup window."
+  "Open a cmd window(aka shell-mode)."
   [^String s]
   (exec-external "start cmd"))
 
-(+internal ! open-cmd)
+(+internal !! open-cmd)
 
 #_(defn cmd-ping
   "Cmd \"ping\" wrapper. See \"!ping /?\"."

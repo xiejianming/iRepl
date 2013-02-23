@@ -83,18 +83,20 @@
       (println "Please type a \"?\" to start....")
       (println "  ? [xxx]   - Show this message or doc info of function/cmd \"xxx\".")
       (println "  ??        - Show all available iRepl commands.")
-      (println "  ! [xxx]   - Open a cmd window or execute external cmd \"xxx\" in a popup window.")
-      (println "  q         - Quit iRepl."))  
+      (println "  !xxx      - Execute external cmd \"xxx\" in a popup window.")
+      (println "  !!        - Open a cmd window(aka shell-mode).")
+      (println "  !q        - Quit iRepl."))  
     (case s
       "*" (clojure.pprint/print-table 
             [:name :desc]
             (loop [lst (sort @*builtins*) rows []]
               (if (empty? lst)
-                (conj rows                      
+                (conj rows  
+                      {:name "!xxx" 
+                       :desc "Execute external cmd \"xxx\" in a popup window."}
                       {:name "$${xxx}"
                        :desc "Extraction operator to extract (a String) result from OS/Clojure call."}
-                      {:name "Quit" 
-                       :desc "Type one of these to quit iRepl: 8/88/quit/q/Q/bye"})
+                      {:name "!q" :desc "Quit iRepl."})
                 (let [[k v] (first lst)]
                   (dbk k v)
                   (recur (rest lst)

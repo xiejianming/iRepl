@@ -101,7 +101,7 @@ A vector containing unevaluated forms will be returned."
   ****
   ****/////////////////////////////////////////////////////////////
 ")  
-  (let [exit-cmd #{"8" "88" "quit" "q" "Q" "bye"}]
+  (let [exit-cmd #{"!q"}]
     (init)
     (loop [cmd (ask (get-current-path))]
       ;(println)
